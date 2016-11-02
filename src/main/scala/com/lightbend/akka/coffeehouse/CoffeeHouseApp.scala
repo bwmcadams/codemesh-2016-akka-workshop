@@ -2,14 +2,12 @@ package com.lightbend.akka.coffeehouse
 
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.event.Logging
-import akka.pattern.ask
-import akka.util.Timeout
 import scala.annotation.tailrec
 import scala.collection.breakOut
-import scala.io.StdIn
-import scala.util.{ Failure, Success }
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.Duration
+import scala.io.StdIn
+import scala.Console
 
 object CoffeeHouseApp {
 
@@ -19,8 +17,9 @@ object CoffeeHouseApp {
     val opts = argsToOpts(args.toList)
     applySystemProperties(opts)
     val name = opts.getOrElse("name", "coffee-house")
+
     val system = ActorSystem(s"$name-system")
-    val coffeeHouseApp = new CoffeeHouseApp(system)(Settings(system).statusTimeout)
+    val coffeeHouseApp = new CoffeeHouseApp(system)
     coffeeHouseApp.run()
   }
 
@@ -32,11 +31,10 @@ object CoffeeHouseApp {
       System.setProperty(key substring 2, value)
 }
 
-class CoffeeHouseApp(system: ActorSystem)(implicit statusTimeout: Timeout) extends Terminal {
-
-  import system.dispatcher
+class CoffeeHouseApp(system: ActorSystem) extends Terminal {
 
   private val log = Logging(system, getClass.getName)
+
   private val coffeeHouse = createCoffeeHouse()
 
   def run(): Unit = {
@@ -45,13 +43,11 @@ class CoffeeHouseApp(system: ActorSystem)(implicit statusTimeout: Timeout) exten
       + " into the terminal: "
       + Console.BLUE + "[e.g. `q` or `quit`]" + Console.RESET, getClass.getSimpleName)
     commandLoop()
-    Await.result(system.whenTerminated, Duration.Inf)
+    Await.ready(system.whenTerminated, Duration.Inf)
   }
 
-  protected def createCoffeeHouse(): ActorRef = {
-    val caffeineLimit = system.settings.config.getInt("coffee-house.caffeine-limit")
-    system.actorOf(CoffeeHouse.props(caffeineLimit), "coffee-house")
-  }
+  protected def createCoffeeHouse(): ActorRef =
+    system.deadLetters
 
   @tailrec
   private def commandLoop(): Unit =
@@ -70,12 +66,8 @@ class CoffeeHouseApp(system: ActorSystem)(implicit statusTimeout: Timeout) exten
     }
 
   protected def createGuest(count: Int, coffee: Coffee, caffeineLimit: Int): Unit =
-    for (_ <- 1 to count)
-      coffeeHouse ! CoffeeHouse.CreateGuest(coffee, caffeineLimit)
+    ()
 
   protected def status(): Unit =
-    (coffeeHouse ? CoffeeHouse.GetStatus).mapTo[CoffeeHouse.Status] onComplete {
-      case Success(status) => log.info("Status: guest count = {}", status.guestCount)
-      case Failure(error)  => log.error(error, "Can't get status!")
-    }
+    ()
 }

@@ -1,4 +1,4 @@
-package com.lightbend.akka
+package com.lightbend.akka.coffeehouse
 
 import scala.concurrent.duration.{ DurationInt, FiniteDuration }
 
@@ -13,37 +13,19 @@ package object coffeehouse {
   type IndexedSeq[+A] = scala.collection.immutable.IndexedSeq[A]
 
   /**
-   * Adjust this factor to make the [[com.typesafe.training.coffeehouse.busy]] method kind of accurate.
-   * The value `800` works well for a 2014 MacBook Pro with a 2.3 GHz i7 processor and Java 8.
-   * Use the [[com.typesafe.training.coffee.gauge]] method to determin a good value for your machine.
-   */
-  val busyScalingFactor: Int =
-    800
-
-  /**
    * Keeps the CPU busy for the given appoximate duration.
    */
   def busy(duration: FiniteDuration): Unit =
-    pi(duration.toMillis * busyScalingFactor)
+    pi(System.nanoTime() + duration.toNanos)
 
   /**
-   * Determines a reasonable value for the [[com.typesafe.training.coffeehouse.busyScalingFactor]].
+   * Calculate pi until System.nanoTime is later than `endNanos`
    */
-  def gauge(): Int = {
-    val duration = 2.seconds
-    println(s"Please wait for $duration ...")
-    val startTime = System.currentTimeMillis()
-    busy(duration)
-    val endTime = System.currentTimeMillis()
-    val gaugedFactor = busyScalingFactor.toDouble / (endTime - startTime) * duration.toMillis
-    gaugedFactor.toInt
-  }
-
-  private def pi(m: Long) = {
+  private def pi(endNanos: Long) = {
     def gregoryLeibnitz(n: Long) = 4.0 * (1 - (n % 2) * 2) / (n * 2 + 1)
     var n = 0
     var acc = BigDecimal(0.0)
-    while (n < m) {
+    while (System.nanoTime() < endNanos) {
       acc += gregoryLeibnitz(n)
       n += 1
     }
