@@ -8,6 +8,8 @@ import scala.annotation.tailrec
 import scala.collection.breakOut
 import scala.io.StdIn
 import scala.util.{ Failure, Success }
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 object CoffeeHouseApp {
 
@@ -43,7 +45,7 @@ class CoffeeHouseApp(system: ActorSystem)(implicit statusTimeout: Timeout) exten
       + " into the terminal: "
       + Console.BLUE + "[e.g. `q` or `quit`]" + Console.RESET, getClass.getSimpleName)
     commandLoop()
-    system.awaitTermination()
+    Await.result(system.whenTerminated, Duration.Inf)
   }
 
   protected def createCoffeeHouse(): ActorRef = {
@@ -61,7 +63,7 @@ class CoffeeHouseApp(system: ActorSystem)(implicit statusTimeout: Timeout) exten
         status()
         commandLoop()
       case Command.Quit =>
-        system.shutdown()
+        system.terminate()
       case Command.Unknown(command) =>
         log.warning("Unknown command {}!", command)
         commandLoop()

@@ -5,6 +5,7 @@ val akkaVersion           = "2.4.12"
 val scalacticVersion      = "3.0.0"
 val scalatestVersion      = "3.0.0"
 val logbackVersion        = "1.1.3"
+val parCombVersion        = "1.0.2"
 
 
 lazy val root = (project in file(".")).
@@ -17,6 +18,7 @@ lazy val root = (project in file(".")).
       "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
       "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
       "ch.qos.logback" %  "logback-classic" % logbackVersion,
+      "org.scala-lang.modules" %% "scala-parser-combinators" % parCombVersion,
       "org.scalactic" %% "scalactic" % scalacticVersion,
       "org.scalatest" %% "scalatest" % scalatestVersion % "test"
     ),
