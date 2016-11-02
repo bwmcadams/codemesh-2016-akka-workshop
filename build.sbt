@@ -4,6 +4,8 @@ val projectVersion        = "0.1-SNAPSHOT"
 val akkaVersion           = "2.4.12"
 val scalacticVersion      = "3.0.0"
 val scalatestVersion      = "3.0.0"
+val logbackVersion        = "1.1.3"
+
 
 lazy val root = (project in file(".")).
   settings(
@@ -13,6 +15,8 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
       "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
+      "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+      "ch.qos.logback" %  "logback-classic" % logbackVersion,
       "org.scalactic" %% "scalactic" % scalacticVersion,
       "org.scalatest" %% "scalatest" % scalatestVersion % "test"
     ),
